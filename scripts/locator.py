@@ -233,11 +233,11 @@ class MLPRegressor(KerasRegressor):
 
 
 param_grid = {
-    "nlayers": [1, 2, 5, 8, 10, 12, 15],
+    "nlayers": [8, 10, 12, 14],
     "width": [64, 128, 256, 512],
     "dropout_prop": [0.0, 0.1, 0.2, 0.3, 0.4],
     "optimizer__learning_rate": [1e-2, 1e-3, 1e-4, 1e-5],
-    "batch_size": [32, 64, 128, 256],
+    "batch_size": [32, 64, 128],
     "l1_weight": [0.0, 1e-2, 1e-3, 1e-4],
     "l2_weight": [0.0, 1e-2, 1e-3, 1e-4],
 }
@@ -441,15 +441,15 @@ def train_network(model, traingen, testgen, trainlocs, testlocs):
     grid = RandomizedSearchCV(
         estimator=model,
         param_distributions=param_grid,
-        cv=5,
+        cv=4,
         n_jobs=16,
         verbose=1,  # Just print number of fits.
         n_iter=args.n_iter,
+        error_score="raise",
     )
     grid_result = grid.fit(
         traingen,
         trainlocs,
-        verbose=args.keras_verbose,
     )
 
     best_estimator = grid_result.best_estimator_
@@ -643,6 +643,7 @@ else:
             optimizer__learning_rate=0.001,
             fit__validation_data=(testgen, testlocs),
             fit__shuffle=True,
+            fit__verbose=args.keras_verbose,
         )
         history, model = train_network(model, traingen, testgen, trainlocs, testlocs)
         dists = predict_locs(
