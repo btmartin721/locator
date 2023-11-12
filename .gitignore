@@ -1,0 +1,5 @@
+*.vcf.gz
+*.vcf
+*.vcf.gz.tbi
+gridsearch_*
+wtd_*
