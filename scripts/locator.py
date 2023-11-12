@@ -403,26 +403,29 @@ def load_network(traingen, dropout_prop):
 
 
 def load_callbacks(boot):
-    if args.bootstrap or args.jacknife:
-        checkpointer = tf.keras.callbacks.ModelCheckpoint(
-            filepath=args.out + "_boot" + str(boot) + "_weights.hdf5",
-            verbose=args.keras_verbose,
-            save_best_only=True,
-            save_weights_only=True,
-            monitor="val_loss",
-            period=1,
-        )
-    else:
-        checkpointer = tf.keras.callbacks.ModelCheckpoint(
-            filepath=args.out + "_weights.hdf5",
-            verbose=args.keras_verbose,
-            save_best_only=True,
-            save_weights_only=True,
-            monitor="val_loss",
-            period=1,
-        )
+    # if args.bootstrap or args.jacknife:
+    #     checkpointer = tf.keras.callbacks.ModelCheckpoint(
+    #         filepath=args.out + "_boot" + str(boot) + "_weights.hdf5",
+    #         verbose=args.keras_verbose,
+    #         save_best_only=True,
+    #         save_weights_only=True,
+    #         monitor="val_loss",
+    #         period=1,
+    #     )
+    # else:
+    # checkpointer = tf.keras.callbacks.ModelCheckpoint(
+    #     filepath=args.out + "_weights.hdf5",
+    #     verbose=args.keras_verbose,
+    #     save_best_only=True,
+    #     save_weights_only=True,
+    #     monitor="val_loss",
+    #     period=1,
+    # )
     earlystop = tf.keras.callbacks.EarlyStopping(
-        monitor="val_loss", min_delta=0, patience=args.patience
+        monitor="val_loss",
+        min_delta=0,
+        patience=args.patience,
+        restore_best_weights=True,
     )
     reducelr = tf.keras.callbacks.ReduceLROnPlateau(
         monitor="val_loss",
@@ -434,7 +437,7 @@ def load_callbacks(boot):
         cooldown=0,
         min_lr=0,
     )
-    return checkpointer, earlystop, reducelr
+    return earlystop, reducelr
 
 
 def train_network(model, traingen, testgen, trainlocs, testlocs):
@@ -586,7 +589,7 @@ if args.windows:
         sample_data, locs = sort_samples(samples)
         meanlong, sdlong, meanlat, sdlat, locs = normalize_locs(locs)
         ac = filter_snps(genotypes)
-        checkpointer, earlystop, reducelr = load_callbacks("FULL")
+        earlystop, reducelr = load_callbacks("FULL")
         (
             train,
             test,
@@ -613,8 +616,8 @@ if args.windows:
             testgen,
         )
         plot_history(history, dists, args.gnuplot)
-        if not args.keep_weights:
-            subprocess.run("rm " + args.out + "_weights.hdf5", shell=True)
+        # if not args.keep_weights:
+        #     subprocess.run("rm " + args.out + "_weights.hdf5", shell=True)
         t2 = time.time()
         elapsed = t2 - t1
         print("run time " + str(elapsed / 60) + " minutes")
@@ -625,7 +628,7 @@ else:
         sample_data, locs = sort_samples(samples)
         meanlong, sdlong, meanlat, sdlat, locs = normalize_locs(locs)
         ac = filter_snps(genotypes)
-        checkpointer, earlystop, reducelr = load_callbacks("FULL")
+        earlystop, reducelr = load_callbacks("FULL")
         (
             train,
             test,
@@ -639,7 +642,7 @@ else:
         start = time.time()
         model = MLPRegressor(
             epochs=args.max_epochs,
-            callbacks=[checkpointer, earlystop, reducelr],
+            callbacks=[earlystop, reducelr],
             optimizer__learning_rate=0.001,
             fit__validation_data=(testgen, testlocs),
             fit__shuffle=True,
@@ -659,8 +662,8 @@ else:
             testgen,
         )
         plot_history(history, dists, args.gnuplot)
-        if not args.keep_weights:
-            subprocess.run("rm " + args.out + "_weights.hdf5", shell=True)
+        # if not args.keep_weights:
+        #     subprocess.run("rm " + args.out + "_weights.hdf5", shell=True)
         end = time.time()
         elapsed = end - start
         print("run time " + str(elapsed / 60) + " minutes")
@@ -697,8 +700,8 @@ else:
             testgen,
         )
         plot_history(history, dists, args.gnuplot)
-        if not args.keep_weights:
-            subprocess.run("rm " + args.out + "_bootFULL_weights.hdf5", shell=True)
+        # if not args.keep_weights:
+        #     subprocess.run("rm " + args.out + "_bootFULL_weights.hdf5", shell=True)
         end = time.time()
         elapsed = end - start
         print("run time " + str(elapsed / 60) + " minutes")
@@ -733,10 +736,10 @@ else:
                 testgen2,
             )
             plot_history(history, dists, args.gnuplot)
-            if not args.keep_weights:
-                subprocess.run(
-                    "rm " + args.out + "_boot" + str(boot) + "_weights.hdf5", shell=True
-                )
+            # if not args.keep_weights:
+            #     subprocess.run(
+            #         "rm " + args.out + "_boot" + str(boot) + "_weights.hdf5", shell=True
+            #     )
             end = time.time()
             elapsed = end - start
             K.clear_session()
@@ -804,8 +807,8 @@ else:
                 testgen,
                 verbose=False,
             )  # TODO: check testgen behavior for printing R2 to screen with jacknife in predict mode
-        if not args.keep_weights:
-            subprocess.run("rm " + args.out + "_bootFULL_weights.hdf5", shell=True)
+        # if not args.keep_weights:
+        #     subprocess.run("rm " + args.out + "_bootFULL_weights.hdf5", shell=True)
 
 # ag1000g.phase1.ar3.pass.2L.0-5e6.zarr
 ###debugging params
