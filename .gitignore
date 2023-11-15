@@ -3,3 +3,12 @@
 *.vcf.gz.tbi
 gridsearch_*
 wtd_*
+.git
+.venv/
+*.pt
+*.pkl
+torchtest_*
+samples.txt
+*.png
+*.db
+settings.json
