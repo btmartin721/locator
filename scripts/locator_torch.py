@@ -447,6 +447,7 @@ def train_model(
         model.train()
         total_loss = 0.0
         for data, targets in train_loader:
+            data, targets = data.to(device), targets.to(device)
             optimizer.zero_grad()
             outputs = model(data)
             loss = criterion(outputs, targets)
@@ -464,6 +465,7 @@ def train_model(
         total_val_loss = 0.0
         with torch.no_grad():
             for data, targets in val_loader:
+                data, targets = data.to(device), targets.to(device)
                 outputs = model(data)
                 val_loss = criterion(outputs, targets)
                 total_val_loss += val_loss.item()
