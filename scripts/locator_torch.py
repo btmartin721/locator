@@ -215,7 +215,7 @@ class MLPRegressor(nn.Module):
 
     def __init__(self, input_size, width=256, nlayers=10, dropout_prop=0.2):
         super(MLPRegressor, self).__init__()
-        self.input_layer = nn.Linear(input_size, width)
+        self.input_layer = nn.Linear(input_size, width, device=device)
         self.elu = nn.ELU()
         self.dropout = nn.Dropout(dropout_prop)
 
@@ -224,12 +224,12 @@ class MLPRegressor(nn.Module):
         for _ in range(nlayers // 2):  # Handles even numbers of layers
             self.blocks.append(
                 nn.Sequential(
-                    nn.Linear(width, width),
-                    nn.BatchNorm1d(width),
+                    nn.Linear(width, width, device=device),
+                    nn.BatchNorm1d(width, device=device),
                     nn.ELU(),
                     nn.Dropout(dropout_prop),
-                    nn.Linear(width, width),
-                    nn.BatchNorm1d(width),
+                    nn.Linear(width, width, device=device),
+                    nn.BatchNorm1d(width, device=device),
                 )
             )
 
@@ -237,13 +237,13 @@ class MLPRegressor(nn.Module):
         self.extra_layer = None
         if nlayers % 2 != 0:
             self.extra_layer = nn.Sequential(
-                nn.Linear(width, width),
-                nn.BatchNorm1d(width),
+                nn.Linear(width, width, device=device),
+                nn.BatchNorm1d(width, device=device),
                 nn.ELU(),
                 nn.Dropout(dropout_prop),
             )
 
-        self.output_layer = nn.Linear(width, 2)
+        self.output_layer = nn.Linear(width, 2, device=device)
 
     def forward(self, x):
         x = self.elu(self.input_layer(x))
@@ -706,7 +706,7 @@ def bootstrap_training_generator(
         )
 
         # Create a Subset of the dataset corresponding to the resampled indices
-        resampled_dataset = Subset(train_loader.dataset, resampled_indices)
+        resampled_dataset = Subset(train_loader.dataset, resampled_indices).to(device)
 
         # Create a DataLoader for the resampled dataset with the new sampler
         resampled_loader = DataLoader(
@@ -896,13 +896,13 @@ def main():
     train_dataset = TensorDataset(
         torch.tensor(X_train, dtype=torch.float),
         torch.tensor(y_train, dtype=torch.float),
-    )
+    ).to(device)
     test_dataset = TensorDataset(
         torch.tensor(X_test, dtype=torch.float), torch.tensor(y_test, dtype=torch.float)
-    )
+    ).to(device)
     val_dataset = TensorDataset(
         torch.tensor(X_val, dtype=torch.float), torch.tensor(y_val, dtype=torch.float)
-    )
+    ).to(device)
 
     # Do weighted sampling per population if popmap provided.
     if args.popmap is not None:
