@@ -706,7 +706,7 @@ def bootstrap_training_generator(
         )
 
         # Create a Subset of the dataset corresponding to the resampled indices
-        resampled_dataset = Subset(train_loader.dataset, resampled_indices).to(device)
+        resampled_dataset = Subset(train_loader.dataset, resampled_indices)
 
         # Create a DataLoader for the resampled dataset with the new sampler
         resampled_loader = DataLoader(
@@ -896,13 +896,13 @@ def main():
     train_dataset = TensorDataset(
         torch.tensor(X_train, dtype=torch.float),
         torch.tensor(y_train, dtype=torch.float),
-    ).to(device)
+    )
     test_dataset = TensorDataset(
         torch.tensor(X_test, dtype=torch.float), torch.tensor(y_test, dtype=torch.float)
-    ).to(device)
+    )
     val_dataset = TensorDataset(
         torch.tensor(X_val, dtype=torch.float), torch.tensor(y_val, dtype=torch.float)
-    ).to(device)
+    )
 
     # Do weighted sampling per population if popmap provided.
     if args.popmap is not None:
