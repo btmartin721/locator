@@ -45,6 +45,11 @@ parser.add_argument(
     help="Do gridsearch to find best parameters? Defaults to False.",
 )
 parser.add_argument(
+    "--sqldb",
+    type=str,
+    help="specify directory to save sqlite3 database for Optuna search.",
+)
+parser.add_argument(
     "--sample_data",
     help="tab-delimited text file with columns\
         'sampleID \t x \t y'.\
@@ -936,7 +941,7 @@ def main():
             direction="minimize",
             sampler=sampler,
             pruner=pruner,
-            storage=f"sqlite:///{args.out}_optuna.db",
+            storage=f"sqlite:///{args.sqldb}/{args.out}_optuna.db",
             load_if_exists=True,
             study_name=f"{args.out}_torch_study",
         )
