@@ -1,0 +1,14 @@
+scikit-allel
+matplotlib
+seaborn
+numpy
+pandas
+torch
+optuna
+zarr
+scipy
+scikit-learn
+tqdm
+h5py
+plotly
+kaleido
